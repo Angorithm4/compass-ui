@@ -9,28 +9,13 @@
 	:header-cell-style="{padding: '0px'}"
 	stripe
 	height="calc(100% - 1.8rem)">
-    <el-table-column
-	type="index">
-	<template v-slot="scope">
-	    <el-tooltip
-		:disabled="colorTipDisabled"
-		effect="light"
-		placement="left"
-		transition="el-fade-in"
-		:enterable="false"
-		:open-delay="0">
-	    </el-tooltip>
-	</template>
-    <el-table-column>
-    <el-table-column>
-	align="center"
-	prop="Acct"
-	label="Acct"
-	width="60"
-    <template slot="header">
-	<div style="font-size: 13px; line-height: 1.3">Account#</div>
-    </template>
-    <el-table-column>
+	<el-table-column
+		align="center"
+		prop="Acct"
+		label="Acct#"
+		width="60">
+	</el-table-column>
+    </el-table>
 </template>
 
 <script>
@@ -58,21 +43,18 @@ export default {
 	    let wb = XLSX.read(data, {type: 'array', cellStyles: true});
 	    let ws = wb.Sheets[wb.SheetNames[0]];
 
-	    // find first row of participants data
-	    let firstEntryRow = 0;
-	    while (ws[XLSX.utils.encode_cell({c: 0, r: firstEntryRow})] == undefined)
-		++firstEntryRow;
-
-	    firstEntryRow = firstEntryRow + 3; 
+	    let firstEntryRow = 6; 
 
 	    // read each student
-	    for (let i = firstEntryRow; ws[`A${i}`] != undefined; ++i) {
+	    for (let i = firstEntryRow; ws[`A${i}`] !== undefined; ++i) {
+		console.log(ws[`A${i}`].v);
 		let student = {
-		    Acct: ws[`A[${i}]`].v,
-		}
-		this.studentData.push(student)
+		    Acct: ws[`A${i}`].v
+		};
+		console.log(student);
+		this.studentData.push(student);
 	    }
 	});
-    },
-};
+    }
+}
 </script>
