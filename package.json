@@ -9,8 +9,14 @@
     "deploy": "sh deploy.sh"
   },
   "dependencies": {
+    "axios": "^0.25.0",
     "core-js": "^3.6.5",
-    "vue": "^2.6.11"
+    "element-ui": "^2.15.6",
+    "vue": "^2.6.11",
+    "vue-axios": "^3.4.0",
+    "vue-gtag": "^1.16.1",
+    "xlsx": "^0.17.5",
+    "xlsx-style": "^0.8.13"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
