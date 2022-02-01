@@ -4,16 +4,18 @@
 	<el-main>
 	    <Table style="height: 100%"/>
 	</el-main>
+    </el-container>
   </div>
 </template>
 
+
 <script>
-import Table from './components/Table.vue'
+import Table from './components/Table.vue' // export default 
 
 export default {
   name: 'App',
   components: {
-    Table
+    Table,
   }
 }
 </script>
