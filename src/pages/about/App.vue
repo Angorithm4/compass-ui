@@ -10,7 +10,7 @@
 
 
 <script>
-import Table from './components/Table.vue' // export default 
+import Table from '../../components/Table.vue' // export default 
 
 export default {
   name: 'App',

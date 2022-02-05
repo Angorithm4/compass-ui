@@ -1,0 +1,6 @@
+TODO:
+* Auto Run at 6:00 am HKT (Js)
+* UI Design (VueJs)
+* Restart Server and set file and programs, Prepare for formal release
+* How to download xlsx file from google sheet (one sheet?)
+

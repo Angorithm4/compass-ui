@@ -5,8 +5,17 @@
 	<el-checkbox label="Net Exposure" size="mini" v-model="NEColVisible"></el-checkbox>
 	<el-checkbox label="Cash Bal" size="mini" v-model="CBColVisible"></el-checkbox>
 	<el-checkbox label="Loan Bal" size="mini" v-model="LBColVisible"></el-checkbox>
+
+	<el-checkbox size="mini" :value="true">
+	    Show #
+	    <el-select v-model="showNum" allow-create filterable default-first-option size="mini" style="width: 80px">
+		<el-option v-for="item in showOptions" :key="item" :value="item"></el-option>
+	    </el-select>
+	    in Charts
+	    
+	</el-checkbox>
     </div>
-    <el-dialog title="Your Hist Performance" width="60%" :visible.sync="ChartInfoVisible" center>
+    <el-dialog title="Your Hist Performance" width="95%" :visible.sync="ChartInfoVisible" center>
 	<div>
 	<canvas id="info-chart"></canvas>
 	</div>
@@ -27,7 +36,7 @@
 	    align="center"
 	    prop="Acct"
 	    label="Account#"
-	    width="120">
+	    width="200">
 	    <template slot="header">
 		<div style="font-size: 13px; line-height: 1.3">Account#</div>
 	    </template>
@@ -36,7 +45,7 @@
 	    align="center"
 	    prop="SSE"
 	    label="Short Exposure"
-	    width="200"
+	    width="150"
 	    sortable
 	    v-if="SEColVisible">
 	</el-table-column>
@@ -44,7 +53,7 @@
 	    align="center"
 	    prop="SNE"
 	    label="Net Exposure"
-	    width="200"
+	    width="150"
 	    sortable
 	    v-if="NEColVisible">
 	</el-table-column>
@@ -60,7 +69,7 @@
 	    align="center"
 	    prop="MLB"
 	    label="Loan Bal"
-	    width="140"
+	    width="150"
 	    sortable
 	    v-if="LBColVisible">
 	</el-table-column>
@@ -68,17 +77,17 @@
 	    align="center"
 	    prop="AUM"
 	    label="AuM"
-	    width="200"
+	    width="150"
 	    sortable>
 	</el-table-column>
 	<el-table-column
 	    align="center"
 	    prop="RET"
 	    label="YTD Return"
-	    width="230"
+	    width="150"
 	    sortable>
 	    <template v-slot="scope">
-		<span :style="`color: #${scope.row.RET >= 0 ? '00FF00' : 'FF0000'}`">
+		<span :style="`color: #${scope.row.RETNUM >= 0 ? '00FF00' : 'FF0000'}`">
 		    {{ scope.row.RET }}
 		</span>
 	    </template>
@@ -87,9 +96,9 @@
 	    align="center"
 	    prop="Show Chart"
 	    label="View Chart"
-	    width="200">
+	    width="150">
 	    <template slot-scope="scope">
-		<el-button size="mini" type="primary" plain @click = "chart(scope.row.Acct)">View Chart</el-button>
+		<el-button size="mini" type="primary" plain @click = "chart(scope.row.Acct)">Return</el-button>
 	    </template>
 	</el-table-column>
     </el-table>
@@ -146,7 +155,7 @@ export default { // Table
 
 			if (ws[`Q${i}`] !== undefined) {
 			    // console.log(ws[`B${i}`].v);
-			    this.chartlabels.push(ws[`B${i}`].v);
+			    this.chartlabels.push(this.ExcelDateToJSDate(ws[`B${i}`].v));
 			    // console.log(ws[`Q${i}`].v * 100);
 			    this.chartdata.push(ws[`Q${i}`].v * 100);
 			}
@@ -154,6 +163,27 @@ export default { // Table
 			// console.log(this.chartdata.length);
 		    }
 		}
+
+		let templabel = [];
+		let tempdata =  [];
+		let tmp = this.showNum;
+		if (this.showNum == "MAX" ) {
+		    // do nothing
+		}
+		else if (this.chartlabels.length > this.showNum) {
+		    // only get the minimum
+
+		    for (let i = this.chartlabels.length-1; i >= 0; i--) {
+			if (tmp == 0) {
+			    break;
+			}
+			tmp--;
+			templabel.unshift(this.chartlabels[i]);
+			tempdata.unshift(this.chartdata[i]);
+		    }
+		    this.chartdata = tempdata;
+		    this.chartlabels = templabel;
+		} 
 
 		this.infochartdata = null;
 
@@ -193,6 +223,51 @@ export default { // Table
 	    });
 	    this.ChartInfoVisible = true;
 	},
+
+	ExcelDateToJSDate: function(date) {
+	  var date = new Date(Math.round((date - 25569)*86400*1000));
+	  var month = date.getMonth() + 1;
+	  var day = date.getDate();
+	  var ret = '';
+	  ret += month.toString() + '-' + day.toString();
+	  return ret;
+	},
+
+	FormatNum: function(num) {
+	    // 1. to int
+	    var ret = '';
+	    var nums = '';
+	    num = num.toString();
+
+	    for (let i = 0; i < num.length; i++) {
+		if (num[i] == '.') break;
+		nums += num[i];
+	    }
+
+	    // 2. add point
+
+	    var tri = 0;
+	    for (let i = nums.length-1; i >= 0; i--) {
+		ret += nums[i];
+		tri++;
+
+		if (tri == 3) {
+		    if (i == 0) {
+			break;
+		    }
+		    let tri = 0;
+		    ret += ',';
+		}
+	    }
+
+	    ret = this.reverse(ret);
+
+	    return ret;
+	},
+
+	reverse: function(s){
+	    return s.split("").reverse().join("");
+	},
     },
 
     name: 'RankTable',
@@ -213,7 +288,9 @@ export default { // Table
 	    chartOptions: {
 		responsive: true,
 		maintainAspectRatio: false
-	    }
+	    },
+	    showNum: 3,
+	    showOptions: [3, 7, 14, 20, 30, 'Max'],
 	}
     },
 
@@ -236,15 +313,50 @@ export default { // Table
 
 	    // read each student
 	    for (let i = firstEntryRow; ws[`A${i}`] !== undefined; ++i) {
+		// deal with each data (only for displaying)
+
+		let maxdigits = 4;
+
+		console.log(ws[`G${i}`].v); // float
+		let retf = ws[`G${i}`].v;
+		retf *= 100;
+		retf = retf.toString(); // to decimal representation (keep 4 digits)
+		let rets = ''; 
+		let hitdec = false;
+		let cdigits = 0;
+		for (let i = 0; i < retf.length; i++) {
+		    if (hitdec) {
+			cdigits += 1;
+		    }
+		    if (retf[i] == '.') {
+			// hit decimal
+			hitdec = true;
+		    }
+
+		    rets += retf[i];
+
+		    if (cdigits == maxdigits) {
+			break;
+		    }
+		}
+
+		rets += '%';
+		console.log(rets);
+
+		let AUMdollar = '$';
+		AUMdollar += this.FormatNum(ws[`F${i}`].v);
+
 		let student = {
 		    Acct: ws[`A${i}`].v,
-		    SSE: ws[`B${i}`].v,
-		    SNE: ws[`C${i}`].v,
-		    CAB: ws[`D${i}`].v,
-		    MLB: ws[`E${i}`].v,
-		    AUM: ws[`F${i}`].v,
-		    RET: ws[`G${i}`].v
+		    SSE: this.FormatNum(ws[`B${i}`].v),
+		    SNE: this.FormatNum(ws[`C${i}`].v),
+		    CAB: this.FormatNum(ws[`D${i}`].v),
+		    MLB: this.FormatNum(ws[`E${i}`].v),
+		    AUM: AUMdollar,
+		    RET: rets,
+		    RETNUM: ws[`G${i}`].v
 		};
+
 		// console.log(student);
 		this.studentData.push(student);
 	    }
