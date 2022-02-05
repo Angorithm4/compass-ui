@@ -2,7 +2,7 @@
   <div id="app">
     <el-container style="height: 100%">
 	<el-main>
-	    <Table style="height: 100%"/>
+	    <Search style="height: 100%"/>
 	</el-main>
     </el-container>
   </div>
@@ -10,12 +10,12 @@
 
 
 <script>
-import Table from '../../components/Table.vue' // export default 
+import Search from '../../components/Search.vue' // export default 
 
 export default {
   name: 'App',
   components: {
-    Table,
+    Search,
   }
 }
 </script>

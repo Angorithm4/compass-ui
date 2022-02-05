@@ -45,7 +45,7 @@
 	    align="center"
 	    prop="SSE"
 	    label="Short Exposure"
-	    width="150"
+	    width="170"
 	    sortable
 	    v-if="SEColVisible">
 	</el-table-column>
@@ -53,7 +53,7 @@
 	    align="center"
 	    prop="SNE"
 	    label="Net Exposure"
-	    width="150"
+	    width="170"
 	    sortable
 	    v-if="NEColVisible">
 	</el-table-column>
