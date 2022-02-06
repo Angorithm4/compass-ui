@@ -20,7 +20,7 @@
 	    align="center"
 	    prop="Acct"
 	    label="Account#"
-	    width="200">
+	    width="150">
 	    <template slot="header">
 		<div style="font-size: 13px; line-height: 1.3">Account#</div>
 	    </template>
@@ -29,7 +29,7 @@
 	    align="center"
 	    prop="Time"
 	    label="Date/Time"
-	    width="250"
+	    width="150"
 	    sortable>
 	</el-table-column>
 	<el-table-column
@@ -253,3 +253,22 @@ export default {
     },
 }
 </script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+a {
+  color: #42b983;
+}
+
+.el-checkbox {
+  margin-right: 15px;
+}
+
+/* element-ui's bug */
+#HistoryTable >>> .el-table__header-wrapper {
+  height: 40px;
+}
+#HistoryTable >>> .el-table__body-wrapper {
+  height: calc(100% - 40px) !important;
+}
+</style>

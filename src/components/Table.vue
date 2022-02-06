@@ -12,14 +12,8 @@
 		<el-option v-for="item in showOptions" :key="item" :value="item"></el-option>
 	    </el-select>
 	    in Charts
-	    
 	</el-checkbox>
     </div>
-    <el-dialog title="Your Hist Performance" width="95%" :visible.sync="ChartInfoVisible" center>
-	<div>
-	<canvas id="info-chart"></canvas>
-	</div>
-    </el-dialog>
     <el-table
 	id="RankTable"
 	:data="studentData"
@@ -45,7 +39,7 @@
 	    align="center"
 	    prop="SSE"
 	    label="Short Exposure"
-	    width="170"
+	    width="200"
 	    sortable
 	    v-if="SEColVisible">
 	</el-table-column>
@@ -95,18 +89,20 @@
 	<el-table-column
 	    align="center"
 	    prop="Show Chart"
-	    label="View Chart"
-	    width="150">
+	    label="Chart"
+	    width="100">
 	    <template slot-scope="scope">
 		<el-button size="mini" type="primary" plain @click = "chart(scope.row.Acct)">Return</el-button>
 	    </template>
 	</el-table-column>
     </el-table>
-
+    <div>
+    <el-dialog title="Your Hist Performance" width="95%" :visible.sync="ChartInfoVisible" center>
 	<div>
-	<canvas id="planet-chart"></canvas>
+	<canvas id="info-chart"></canvas>
 	</div>
-
+    </el-dialog>
+    </div>
     </div>
 </template>
 
@@ -297,7 +293,7 @@ export default { // Table
     mounted() {
 	// const ctx = document.getElementById('planet-chart');
 	// new Chart(ctx, this.planetChartData);
-	this.axios.get("./sheets/ranking.xlsx", {
+	this.axios.get("./sheets/rank.xlsx", {
 	    responseType: "arraybuffer",
 	    headers: {
 		'Cache-control': 'no-cache',
@@ -364,3 +360,30 @@ export default { // Table
     }
 }
 </script>
+
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+a {
+  color: #42b983;
+}
+
+.el-checkbox {
+  margin-right: 15px;
+}
+
+/* element-ui's bug */
+#RankTable >>> .el-table__header-wrapper {
+  height: 40px;
+}
+#RankTable >>> .el-table__body-wrapper {
+  height: calc(100% - 40px) !important;
+}
+</style>
+
+
+<style>
+#RankGroup .el-checkbox__label {
+  padding-left: 6px;
+}
+</style>
