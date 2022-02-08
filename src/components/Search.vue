@@ -97,11 +97,18 @@ export default {
 	    
 	    this.sstudent = [];
 
-	    this.studentdata.forEach(student => {
-		if (student.Acct == this.searchid || student.Time == this.searchid) {
+	    if (this.searchid == '') {
+		// Show all of them
+		this.studentdata.forEach(student => {
 		    this.sstudent.push(student);
-		}
-	    });
+		});
+	    } else {
+		this.studentdata.forEach(student => {
+		    if (student.Acct == this.searchid || student.Time == this.searchid) {
+			this.sstudent.push(student);
+		    }
+		});
+	    }
 
 	    // show table
 	    this.ShowTable = true;
