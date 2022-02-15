@@ -103,8 +103,9 @@ export default {
 		    this.sstudent.push(student);
 		});
 	    } else {
+		var idtotal = this.searchid + " Total"
 		this.studentdata.forEach(student => {
-		    if (student.Acct == this.searchid || student.Time == this.searchid) {
+		    if (student.Acct == this.searchid || student.Acct == idtotal) {
 			this.sstudent.push(student);
 		    }
 		});
@@ -175,28 +176,29 @@ export default {
     },
 
     mounted() {
-	this.axios.get("./sheets/traderecord.xlsx", {
+	this.axios.get("./sheets/PnlDB.xlsx", {
+	// this.axios.get("./sheets/traderecord.xlsx", {
 	    responseType: "arraybuffer",
 	    headers: {
 		'Cache-control': 'no-cache',
 		'Pragma': 'no-cache',
-		'Expires': '0'
+		'Expires': '0',
 	    }
 	}).then(resp => {
 	    let data = new Uint8Array(resp.data);
 	    let wb = XLSX.read(data, {type: 'array', cellStyles: true});
-	    let ws = wb.Sheets[wb.SheetNames[0]];
+	    let ws = wb.Sheets[wb.SheetNames[2]];
 
-	    let firstEntryRow = 5; // start index
+	    let firstEntryRow = 6; // start index
 
-	    let change = false; // whether we need to change person
-	    this.next = true;
+	    // let change = false; // whether we need to change person
+	    // this.next = true;
 
-	    this.currstudent = ws[`A${firstEntryRow}`].v;
 
 	    for (let i = firstEntryRow; ws[`A${i}`] != undefined; ++i) {
 		// read each student 
 
+		/*
 		let pn = ws[`A${i}`]; // person or null
 
 		if (pn.v == '(blank)') {
@@ -206,40 +208,18 @@ export default {
 		if (this.next) {
 		    // change student
 		    this.currstudent = pn.v;
-		    console.log("Change!");
+		    // console.log("Change!");
 		    this.next = false;
 		}
 
 		if (pn.v != '') {
 		    change = !change;
-		    console.log(change);
+		    // console.log(change);
 		}
-
-
-		if (change == false) { 
-
-		    let tmpstudent = {
-			Acct: 'Total:',
-			Time: this.currstudent,
-			Asset: '',
-			Code: '',
-			Currency: '',
-			Qty: '',
-			AVG: this.FormatNum(ws[`G${i}`].v),
-			EOD: this.FormatNum(ws[`H${i}`].v),
-			SUM: this.FormatNum(ws[`I${i}`].v),
-		    }
-
-		    console.log(tmpstudent);
-
-		    this.studentdata.push(tmpstudent);
-		    
-		    this.next = true;
-		    continue;
-		}
+		*/
 
 		let student = {
-		    Acct: this.currstudent,
+		    Acct: ws[`A${i}`].v,
 		    Time: this.ExcelDateToJSDate(ws[`B${i}`].v),
 		    Asset: ws[`C${i}`].v,
 		    Code: ws[`D${i}`].v,
@@ -247,10 +227,9 @@ export default {
 		    Qty: this.FormatNum(ws[`F${i}`].v),
 		    AVG: this.FormatNum(ws[`G${i}`].v),
 		    EOD: this.FormatNum(ws[`H${i}`].v),
-		    SUM: this.FormatNum(ws[`I${i}`].v),
 		}
 
-		console.log(student);
+
 
 		this.studentdata.push(student);
 	    }

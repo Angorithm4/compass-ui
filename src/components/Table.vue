@@ -1,11 +1,8 @@
 <template> 
     <div>
     <div id="RankGroup" style="height: 2rem; white-space: nowrap">
-	<el-checkbox label="Short Exposure" size="mini" v-model="SEColVisible"></el-checkbox>
-	<el-checkbox label="Net Exposure" size="mini" v-model="NEColVisible"></el-checkbox>
-	<el-checkbox label="Cash Bal" size="mini" v-model="CBColVisible"></el-checkbox>
-	<el-checkbox label="Loan Bal" size="mini" v-model="LBColVisible"></el-checkbox>
-
+	<el-checkbox label="Post-Trade Ava Margin Balance" size="mini" v-model="PTAMBVisible"></el-checkbox>
+	<el-checkbox label="Post-Trade Margin Loan Balance" size="mini" v-model="PTMLBVisible"></el-checkbox>
 	<el-checkbox size="mini" :value="true">
 	    Show #
 	    <el-select v-model="showNum" allow-create filterable default-first-option size="mini" style="width: 80px">
@@ -24,7 +21,7 @@
 	:header-cell-style="{padding: '10px'}"
 	stripe
 	height="calc(100% - 1.8rem)"
-	:default-sort = "{prop: 'RET', order: 'descending'}">
+	:default-sort = "{prop: 'AUM', order: 'descending'}">
 	<el-table-column type="index"></el-table-column>
 	<el-table-column
 	    align="center"
@@ -37,38 +34,6 @@
 	</el-table-column>
 	<el-table-column
 	    align="center"
-	    prop="SSE"
-	    label="Short Exposure"
-	    width="200"
-	    sortable
-	    v-if="SEColVisible">
-	</el-table-column>
-	<el-table-column
-	    align="center"
-	    prop="SNE"
-	    label="Net Exposure"
-	    width="170"
-	    sortable
-	    v-if="NEColVisible">
-	</el-table-column>
-	<el-table-column
-	    align="center"
-	    prop="CAB"
-	    label="Cash Bal"
-	    width="150"
-	    sortable
-	    v-if="CBColVisible">
-	</el-table-column>
-	<el-table-column
-	    align="center"
-	    prop="MLB"
-	    label="Loan Bal"
-	    width="150"
-	    sortable
-	    v-if="LBColVisible">
-	</el-table-column>
-	<el-table-column
-	    align="center"
 	    prop="AUM"
 	    label="AuM"
 	    width="150"
@@ -76,10 +41,25 @@
 	</el-table-column>
 	<el-table-column
 	    align="center"
+	    prop="PTAMB"
+	    label="PTAMB"
+	    width="150"
+	    sortable
+	    v-if="PTAMBVisible">
+	</el-table-column>
+	<el-table-column
+	    align="center"
+	    prop="PTMLB"
+	    label="PTMLB"
+	    width="150"
+	    sortable
+	    v-if="PTMLBVisible">
+	</el-table-column>
+	<el-table-column
+	    align="center"
 	    prop="RET"
 	    label="YTD Return"
-	    width="150"
-	    sortable>
+	    width="150">
 	    <template v-slot="scope">
 		<span :style="`color: #${scope.row.RETNUM >= 0 ? '00FF00' : 'FF0000'}`">
 		    {{ scope.row.RET }}
@@ -92,7 +72,7 @@
 	    label="Chart"
 	    width="100">
 	    <template slot-scope="scope">
-		<el-button size="mini" type="primary" plain @click = "chart(scope.row.Acct)">Return</el-button>
+		<el-button size="mini" type="primary" plain @click = "chart(scope.row.Acct)">AuM</el-button>
 	    </template>
 	</el-table-column>
     </el-table>
@@ -116,107 +96,100 @@ import Chart from 'chart.js'
 export default { // Table
     methods: {
 	chart: function(id) {
+	    console.log(id)
+	    console.log(this.histperformance.length)
+	    this.chartlabels = [];
+	    this.chartdata = [];
 
-	    // console.log("Hello!");
+	    let hitid = true;
 
-	    // console.log(id);
-
-	    this.axios.get("./sheets/histperformance.xlsx", {
-		responseType: "arraybuffer",
-		headers: {
-		    'Cache-control': 'no-cache',
-		    'Pragma': 'no-cache',
-		    'Expires': '0'
-		}
-	    }).then(resp => {
-		let data = new Uint8Array(resp.data);
-		let wb = XLSX.read(data, {type: 'array', cellStyles: true});
-		let ws = wb.Sheets[wb.SheetNames[0]];
-
-		let firstEntryRow = 7; 
-
-		this.chartlabels = [];
-		this.chartdata = [];
-
-		let hitid = true;
-
-		// read id student
-		for (let i = firstEntryRow; ws[`A${i}`] !== undefined; ++i) {
-		    if (ws[`A${i}`].v == id) {
-			if (hitid) {
-			    // Jump first null
-			    hitid = false;
-			    continue;
-			}
-
-			if (ws[`Q${i}`] !== undefined) {
-			    // console.log(ws[`B${i}`].v);
-			    this.chartlabels.push(this.ExcelDateToJSDate(ws[`B${i}`].v));
-			    // console.log(ws[`Q${i}`].v * 100);
-			    this.chartdata.push(ws[`Q${i}`].v * 100);
-			}
-			// console.log(this.chartlabels.length);
-			// console.log(this.chartdata.length);
+	    // read id student
+	    for (let i = 0; i < this.histperformance.length; ++i) {
+		// console.log(this.histperformance[i]);
+		console.log(this.histperformance[i].id)
+		if (this.histperformance[i].id == id) {
+		    if (hitid) {
+			// Jump first null
+			hitid = false;
+			continue;
 		    }
-		}
 
-		let templabel = [];
-		let tempdata =  [];
-		let tmp = this.showNum;
-		if (this.showNum == "MAX" ) {
-		    // do nothing
+		    this.chartlabels.push(this.histperformance[i].datetime);
+		    // console.log(ws[`Q${i}`].v * 100);
+		    this.chartdata.push(this.histperformance[i].ret);
 		}
-		else if (this.chartlabels.length > this.showNum) {
-		    // only get the minimum
+	    }
 
-		    for (let i = this.chartlabels.length-1; i >= 0; i--) {
-			if (tmp == 0) {
-			    break;
-			}
-			tmp--;
-			templabel.unshift(this.chartlabels[i]);
-			tempdata.unshift(this.chartdata[i]);
+	    let templabel = [];
+	    let tempdata =  [];
+	    let tmp = this.showNum;
+	    if (this.showNum == "MAX" ) {
+		// do nothing
+	    }
+	    else if (this.chartlabels.length > this.showNum) {
+		// only get the minimum
+
+		for (let i = this.chartlabels.length-1; i >= 0; i--) {
+		    if (tmp == 0) {
+			break;
 		    }
-		    this.chartdata = tempdata;
-		    this.chartlabels = templabel;
-		} 
+		    tmp--;
+		    templabel.unshift(this.chartlabels[i]);
+		    tempdata.unshift(this.chartdata[i]);
+		}
+		this.chartdata = tempdata;
+		this.chartlabels = templabel;
+	    } 
 
-		this.infochartdata = null;
+	    this.infochartdata = null;
 
-		this.infochartdata = {
-		    type: "line",
-		    data: {
-			labels: this.chartlabels,
-			datasets: [
-			    {
-				label: "RET (%)", 
-				data: this.chartdata,
-				backgroundColor: "rgba(54,73,93,.5)",
-				borderColor: "#36495d",
-				borderWidth: 3
-			    },
-			]
-		    },
-		    options: {
-			responsive: true,
-			lineTension: 1,
-			scales: {
-			  y: {
-			    max: 150,
-			    min: 50,
-			      ticks: {
-				stepSize: 1
-			      }
+	    console.log("dealing with chart")
+
+	    this.infochartdata = {
+		type: "line",
+		data: {
+		    labels: this.chartlabels,
+		    datasets: [
+			{
+			    label: "AuM per value day", 
+			    data: this.chartdata,
+			    backgroundColor: "rgba(54,73,93,.5)",
+			    borderColor: "#36495d",
+			    borderWidth: 3
+			},
+		    ]
+		},
+		options: {
+		    responsive: true,
+		    lineTension: 1,
+		    scales: {
+		      y: {
+			max: 150,
+			min: 50,
+			  ticks: {
+			    stepSize: 1
 			  }
-			}
+		      }
 		    }
-		};
+		}
+	    };
 
-		// render the chart
-		const ctx = document.getElementById('info-chart');
+	    console.log("finish dealing with chart")
+
+	    console.log(this.chartdata.length)
+
+	    // render the chart
+	    const ctx = document.getElementById('info-chart');
+
+	    console.log("rendering the chart")
+
+	    if (ctx != null) {
+		console.log(this.infochartdata)
 		new Chart(ctx, this.infochartdata);
+	    }
 
-	    });
+	    console.log("finish rendering the chart")
+
 	    this.ChartInfoVisible = true;
 	},
 
@@ -272,14 +245,14 @@ export default { // Table
 	    infochartdata: null,
 	    chartdata: null,
 	    chartdatasets: [],
+	    RETVisible: false,
 	    chartlabels: [],
-	    datacollection: null, // test data
-	    histperformance: null,
+	    datacollection: null,  // test data
+	    histperformance: [], // histperformance data
 	    NEColVisible: false,
 	    ChartInfoVisible: false,
-	    SEColVisible: false,
-	    LBColVisible: false,
-	    CBColVisible: false,
+	    PTMLBVisible: false,
+	    PTAMBVisible: false,
 	    studentData: [],
 	    chartOptions: {
 		responsive: true,
@@ -293,6 +266,7 @@ export default { // Table
     mounted() {
 	// const ctx = document.getElementById('planet-chart');
 	// new Chart(ctx, this.planetChartData);
+	/*
 	this.axios.get("./sheets/rank.xlsx", {
 	    responseType: "arraybuffer",
 	    headers: {
@@ -300,10 +274,21 @@ export default { // Table
 		'Pragma': 'no-cache',
 		'Expires': '0'
 	    }
+	*/
+
+	this.axios.get("./sheets/PnlDB.xlsx", {
+	// this.axios.get("./sheets/rank.xlsx", {
+	    responseType: "arraybuffer",
+	    headers: {
+		'Cache-control': 'no-cache',
+		'Pragma': 'no-cache',
+		'Expires': '0',
+	    }
 	}).then(resp => {
 	    let data = new Uint8Array(resp.data);
 	    let wb = XLSX.read(data, {type: 'array', cellStyles: true});
-	    let ws = wb.Sheets[wb.SheetNames[0]];
+	    let ws = wb.Sheets[wb.SheetNames[0]]; // Pnl
+	    let histws = wb.Sheets[wb.SheetNames[1]];
 
 	    let firstEntryRow = 6; 
 
@@ -313,8 +298,8 @@ export default { // Table
 
 		let maxdigits = 4;
 
-		console.log(ws[`G${i}`].v); // float
-		let retf = ws[`G${i}`].v;
+		// console.log(ws[`G${i}`].v); // float
+		let retf = ws[`E${i}`].v;
 		retf *= 100;
 		retf = retf.toString(); // to decimal representation (keep 4 digits)
 		let rets = ''; 
@@ -337,26 +322,40 @@ export default { // Table
 		}
 
 		rets += '%';
-		console.log(rets);
+		// console.log(rets);
 
 		let AUMdollar = '$';
-		AUMdollar += this.FormatNum(ws[`F${i}`].v);
+		AUMdollar += this.FormatNum(ws[`B${i}`].v);
 
 		let student = {
 		    Acct: ws[`A${i}`].v,
-		    SSE: this.FormatNum(ws[`B${i}`].v),
-		    SNE: this.FormatNum(ws[`C${i}`].v),
-		    CAB: this.FormatNum(ws[`D${i}`].v),
-		    MLB: this.FormatNum(ws[`E${i}`].v),
+		    PTAMB: this.FormatNum(ws[`C${i}`].v),
+		    PTMLB: this.FormatNum(ws[`D${i}`].v),
 		    AUM: AUMdollar,
 		    RET: rets,
-		    RETNUM: ws[`G${i}`].v
+		    RETNUM: ws[`E${i}`].v
 		};
 
 		// console.log(student);
 		this.studentData.push(student);
 	    }
-	});
+
+	    let histfirstEntryRow = 4; 
+
+
+	    // read each historical data for charts
+	    for (let i = histfirstEntryRow; histws[`A${i}`] !== undefined; ++i) {
+		// console.log("Read Successfully")
+		let histstudent = {
+		    id: histws[`A${i}`].v,
+		    datetime: this.ExcelDateToJSDate(histws[`B${i}`].v),
+		    ret: histws[`H${i}`].v,
+		};
+
+		this.histperformance.push(histstudent);
+	    }
+	}
+	);
     }
 }
 </script>
