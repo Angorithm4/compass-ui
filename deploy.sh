@@ -10,5 +10,5 @@ cd dist
 git init
 git add -A
 git commit -m 'deploy'
-git push -f git@github.com:Angorithm4/compass-ui.git master:gh-pages
+git push -f git@github.com:A4org/compass-ui.git master:gh-pages
 cd -

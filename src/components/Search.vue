@@ -63,14 +63,14 @@
 	<el-table-column
 	    align="center"
 	    prop="AVG"
-	    label="Average"
+	    label="FX Average"
 	    width="150"
 	    sortable>
 	</el-table-column>
 	<el-table-column
 	    align="center"
 	    prop="EOD"
-	    label="EOD Closing Price"
+	    label="Executed Price"
 	    width="200">
 	</el-table-column>
 	<el-table-column
@@ -224,12 +224,10 @@ export default {
 		    Asset: ws[`C${i}`].v,
 		    Code: ws[`D${i}`].v,
 		    Currency: ws[`E${i}`].v,
-		    Qty: this.FormatNum(ws[`F${i}`].v),
-		    AVG: this.FormatNum(ws[`G${i}`].v),
-		    EOD: this.FormatNum(ws[`H${i}`].v),
+		    Qty: ws[`F${i}`].v,
+		    AVG: ws[`G${i}`].v,
+		    EOD: ws[`H${i}`].v,
 		}
-
-
 
 		this.studentdata.push(student);
 	    }

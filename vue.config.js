@@ -18,5 +18,12 @@ module.exports = {
 	    chunks: [ 'chunk-vendors', 'chunk-common', 'trade-record']
 	},
 
+	'histp': {
+	    entry: './src/pages/histp/main.js',
+	    template: 'public/histp.html',
+	    title: 'histp',
+	    chunks: [ 'chunk-vendors', 'chunk-common', 'histp']
+	},
+
     }
 }

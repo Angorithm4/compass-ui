@@ -1,8 +1,9 @@
 <template> 
     <div>
     <div id="RankGroup" style="height: 2rem; white-space: nowrap">
-	<el-checkbox label="Post-Trade Ava Margin Balance" size="mini" v-model="PTAMBVisible"></el-checkbox>
-	<el-checkbox label="Post-Trade Margin Loan Balance" size="mini" v-model="PTMLBVisible"></el-checkbox>
+	<el-checkbox label="Ava Margin Balance" size="mini" v-model="PTAMBVisible"></el-checkbox>
+	<el-checkbox label="Margin Loan Balance" size="mini" v-model="PTMLBVisible"></el-checkbox>
+
 	<el-checkbox size="mini" :value="true">
 	    Show #
 	    <el-select v-model="showNum" allow-create filterable default-first-option size="mini" style="width: 80px">
@@ -10,6 +11,8 @@
 	    </el-select>
 	    in Charts
 	</el-checkbox>
+
+	<el-button size="mini" type="success" plain @click = "chart('TraderX')">Load Charts Data</el-button>
     </div>
     <el-table
 	id="RankTable"
@@ -96,8 +99,6 @@ import Chart from 'chart.js'
 export default { // Table
     methods: {
 	chart: function(id) {
-	    console.log(id)
-	    console.log(this.histperformance.length)
 	    this.chartlabels = [];
 	    this.chartdata = [];
 
@@ -106,7 +107,6 @@ export default { // Table
 	    // read id student
 	    for (let i = 0; i < this.histperformance.length; ++i) {
 		// console.log(this.histperformance[i]);
-		console.log(this.histperformance[i].id)
 		if (this.histperformance[i].id == id) {
 		    if (hitid) {
 			// Jump first null
@@ -143,7 +143,6 @@ export default { // Table
 
 	    this.infochartdata = null;
 
-	    console.log("dealing with chart")
 
 	    this.infochartdata = {
 		type: "line",
@@ -174,23 +173,16 @@ export default { // Table
 		}
 	    };
 
-	    console.log("finish dealing with chart")
-
-	    console.log(this.chartdata.length)
 
 	    // render the chart
 	    const ctx = document.getElementById('info-chart');
 
-	    console.log("rendering the chart")
-
 	    if (ctx != null) {
-		console.log(this.infochartdata)
 		new Chart(ctx, this.infochartdata);
 	    }
 
-	    console.log("finish rendering the chart")
-
 	    this.ChartInfoVisible = true;
+
 	},
 
 	ExcelDateToJSDate: function(date) {
@@ -258,7 +250,7 @@ export default { // Table
 		responsive: true,
 		maintainAspectRatio: false
 	    },
-	    showNum: 3,
+	    showNum: 7,
 	    showOptions: [3, 7, 14, 20, 30, 'Max'],
 	}
     },
