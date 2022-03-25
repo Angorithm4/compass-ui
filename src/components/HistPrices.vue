@@ -10,13 +10,17 @@
 	  :fetch-suggestions="querySearch"
 	  placeholder="fill in security id:"
 	  :trigger-on-focus="false"
-	  @select="handleSelect"
-	></el-autocomplete>
-	<el-button size="mini" type="primary" plain @click = "show()">Enter</el-button>
+	  @select="show(sid)">
+	</el-autocomplete>
       </el-col>
     </el-row>
     </div>
+
     <el-card class="box-card" shadow="hover">
+	<el-button size="mini" type="success" plain @click = "load()">1. Load Charts Data</el-button>
+	<el-button size="mini" type="primary" plain @click = "render()">2. Show Charts</el-button>
+      </el-col>
+	
     </el-card>
 
   <div>
@@ -40,8 +44,11 @@
         :header-cell-style="{padding: '0px'}"
         stripe
         height="calc(100% - 1.8rem)"
-        :default-sort = "{prop: 'cruelScore', order: 'ascending'}">
-
+	@selection-change="handleSelectionChange">
+      <el-table-column
+	type="selection"
+	width="55">
+      </el-table-column>
       <el-table-column
           label="Ticker"
           width="200"
@@ -64,55 +71,131 @@
       <el-table-column
           align="center"
           v-for="day in showingNum < histdays.length ? showingNum : histdays.length" :key="day"
-          :label="`${histdays[histdays.length - day + 1].histdate}`"
+          :label="`${histdays[histdays.length - day].histdate}`"
           sortable
-          width="150">
+          width="130">
         <template v-slot="scope">
           <a>{{ `${scope.row.histprices[histdays.length - day]}` }}</a>
         </template>
       </el-table-column>
+    </el-table> 
 
-    </el-table>
+    <div>
+    <el-dialog title="Hist Closing Prices" width="80%" :visible.sync="ShowVisible" center>
+	<div>
+	<canvas id="show-chart"></canvas>
+	</div>
+    </el-dialog>
+    </div>
+    <div>
+    <el-dialog title="Hist Closing Prices" width="95%" :visible.sync="ChartInfoVisible" center>
+	<div>
+	<canvas id="info-chart"></canvas>
+	</div>
+    </el-dialog>
+    </div>
+
   </div>
   </div>
 </template>
 
 <script>
-import XLSX from 'xlsx-style';
 
-const CONTESTS_SHOWING_NUM_MIN = 3;
+import XLSX from 'xlsx-style';
+import Chart from 'chart.js'
 
 export default {
   name: 'HistPricesTable',
   data() {
     return {
       // companyVisible: false,
-      restaurants: [],
+      tickers: [],
+
+      // search data
+      searchdata: null,
+
+      searchobj: null,
+      searchlabels: [],
+      searchdatas: [],
+
+      ShowVisible: false,
+      chartsearchdata: null,
+
+      // chart data
+      chartobjs: [],    // all chart objects
+      chartlabels: [],
+      chartdata: null, // rendering data
+      ChartInfoVisible: false,
+
       sid: null,
-      searchid: null,
-      daysColVisible: false,
-      workNumColVisible: false,
-      ratingColVisible: true,
-      cruelRankingColVisible: false,
-      colorTipDisabled: false,
       histdays: [],
       securityData: [],
       showOptions: [3, 7, 14, 20, 30, 'Max'],
       showNum: 3,
+
+      colors: [
+	"#FF5733",
+	"#B6FF33",
+	"#33D2FF",
+	"#3348FF",
+	"#FC33FF",
+	"#FF3345",
+      ]
     }
   },
 
   computed: {
     showingNum() {
+      if (this.showNum == 'Max') return this.histdays.length;
       return Math.max(3, Math.min(this.histdays.length, this.showNum));
     },
   },
 
   methods: {
+      load: function() {
+	this.render();
+	this.show("NFLX");
+      },
+
+      render: function() {
+	this.chartlabels = [];
+	this.chartdata = [];
+
+	for (let i = 0; i < this.histdays.length; i++) {
+	    this.chartlabels.push(this.histdays[i].histdate);
+	}
+
+	this.chartdata =  {
+	    type: "line",
+	    data: {
+		labels: this.chartlabels,
+		datasets: [],
+	    }
+	}
+
+	for (let i = 0; i < this.chartobjs.length; i++) {
+	    let obj = this.chartobjs[i];
+	    this.chartdata.data.datasets.push({
+		fill: false,
+		label: obj.ticker,
+		data: obj.histprices,
+		borderColor: this.colors[i % 6],
+	    });
+	}
+
+	// render
+	const ctx = document.getElementById('info-chart');
+	if (ctx != null) {
+	    new Chart(ctx, this.chartdata);
+	}
+
+	this.ChartInfoVisible = true;
+      },
+
       ExcelDateToJSDate: function(date) {
         var ret = '';
         if (date == '') return ret;
-        var date = new Date(Math.round((date - 25569)*86400*1000));
+        var date = new Date(Math.round((date - 25568)*86400*1000));
         var year = date.getFullYear();
         var month = date.getMonth() + 1;
         var day = date.getDate();
@@ -120,9 +203,59 @@ export default {
         return ret;
       },
 
+      show: function(sid) {
+	this.searchdata = [];
+	// show search result, cannot adjust interval
+	this.sid = sid;
+	this.searchobj = [];
+	for (let i = 0; i < this.securityData.length; i++) {
+	    // objects
+	    if (this.securityData[i].ticker == this.sid) {
+		this.searchobj = this.securityData[i];
+	    }
+	}
+
+	this.searchlabels = [];
+	this.searchdatas = [];
+	// load data
+	for (let i = 0; i < this.histdays.length; i++) {
+	    this.searchlabels.push(this.histdays[i].histdate);
+	}
+
+	this.searchdatas = this.searchobj.histprices;
+
+	this.searchdata = {
+		type: "line",
+		data: {
+		    labels: this.searchlabels,
+		    datasets: [
+			{
+			    fill: false,
+			    label: this.searchobj.ticker, 
+			    data: this.searchdatas,
+			    borderWidth: 3,
+			    borderColor: "#00BFFF",
+			},
+		    ]
+		},
+		options: {
+		    lineTension: 1,
+		}
+	}
+
+	// render
+	const ctx = document.getElementById('show-chart');
+
+	if (ctx != null) {
+	    new Chart(ctx, this.searchdata);
+	}
+
+	this.ShowVisible = true;
+      },
+
       querySearch(queryString, cb) {
-	var restaurants = this.restaurants;
-	var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+	var tickers = this.tickers;
+	var results = queryString ? tickers.filter(this.createFilter(queryString)) : tickers;
 	cb(results);
       },
 
@@ -132,24 +265,13 @@ export default {
 	};
       },
 
-      loadAll() {
-	return [
-	  {"value": "AMZN"},
-	  {"value": "FB"},
-	  {"value": "TSLA"},
-	  {"value": "0700.HK"},
-	  {"value": "0883.HK"},
-	  {"value": "AAPL"},
-	  {"value": "BILI220318P00040000"},
-	];
-      },
-      handleSelect(item) {
-	console.log(item);
+
+      handleSelectionChange(val) {
+	this.chartobjs = val;
       },
   },
 
   mounted() {
-    this.restaurants = this.loadAll();
     this.axios.get("./sheets/PnlDB.xlsx", {
       responseType: "arraybuffer",
       headers: {
@@ -169,7 +291,7 @@ export default {
       // read each date
       for (let i = firstEntryRow; ws[`A${i+1}`].v !== ''; ++i) {
         this.histdays.push({
-          id: this.histdays.length, // index by length
+          id: this.histdays.length-1, // index by length
 	  histdate: this.ExcelDateToJSDate(ws[`A${i}`].v),
         });
       }
@@ -184,6 +306,8 @@ export default {
 	  days: 0,
         };
 
+	this.tickers.push({"value": security.ticker});
+
 	let sdays = 0;
 
         for (let j=0; j < this.histdays.length; ++j) {
@@ -196,10 +320,7 @@ export default {
 	  security.histprices.push(price);
 
         }
-
 	security.days = sdays;
-
-	console.log(security);
 
         this.securityData.push(security);
       }

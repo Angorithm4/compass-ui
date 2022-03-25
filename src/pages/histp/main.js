@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import App from './App.vue'
 
+import lang from 'element-ui/lib/locale/lang/en'
+import locale from 'element-ui/lib/locale'
+
 import {
   // Pagination,
   Dialog,
@@ -154,6 +157,8 @@ Vue.use(Footer);
 Vue.use(Link);
 Vue.use(Divider);
 Vue.use(Image);
+
+locale.use(lang)
 // Vue.use(Calendar);
 // Vue.use(Backtop);
 // Vue.use(PageHeader);

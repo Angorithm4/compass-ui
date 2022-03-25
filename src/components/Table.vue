@@ -141,7 +141,7 @@ export default { // Table
 		this.chartlabels = templabel;
 	    } 
 
-	    this.infochartdata = null;
+	    this.infochartdata = [];
 
 
 	    this.infochartdata = {
