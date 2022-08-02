@@ -59,8 +59,8 @@ body {
     border-bottom-left-radius: 0.5em;
 }
 #tux-gear {
-    width: 8em;
-    height: 6em;
+    width: 10em;
+    height: 8em;
     background-image: url('../photo/logo.png');
     background-position: center center;
     background-repeat: no-repeat;
